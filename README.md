@@ -1,25 +1,11 @@
-
 <h1 align="center">Human ribome Analysis - Storici & Jonoska Lab</h1>
-This work amalgamates efforts of multiple computational biologists and mathematicians to dilineate riboncleotide (units of RNA) found to be embedded in human nuclear genomics DNA of multiple cell types. When ribonucleotides are embedded in the DNA, they are in the form of ribonucleoside mono phosphate or futher termed as rNMP(s).
+This repository contains the code used to analyze ribonucleotide (RNA nucleotide) incorporation in human nuclear genomic DNA across multiple cell types. When ribonucleotides are embedded in DNA, they appear as ribonucleoside monophosphates (rNMPs).
+
+This bioinformatics analysis is the result of a collaborative effort between researchers in Dr. Francesca Storici’s lab at Georgia Tech and mathematicians in Dr. Natasha Jonoska’s lab at the University of South Florida.
+
+A full description of the study and results can be found in the following bioRxiv preprint:
+<a href="https://www.biorxiv.org/content/10.1101/2025.06.27.661996v1.full">Preprint</a>
 <a name="readme-top"></a>
-<!--
-<<<<<<< HEAD
-=======
-
->>>>>>> 7745c49b134bb482eaeb76ab637093e003246ff4
-[![Commits][Commits-shield]][Commits-url]
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Website][website-shield]][website-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
--->
-<<<<<<< HEAD
-
-=======
->>>>>>> 7745c49b134bb482eaeb76ab637093e003246ff4
 
 <!-- TABLE OF CONTENTS -->
 <details>
