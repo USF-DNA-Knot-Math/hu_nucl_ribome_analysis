@@ -138,8 +138,10 @@ colnames(enrich)[opt$subtype_col] ='Subtype'
 enrich_average<-enrich[,c(1:(ncol-length(annotation_order)))]
 enrich_median<-enrich[,c(1:(ncol-length(annotation_order)))]
 for (i in unique(order$Cellline)) {
-  enrich_average[,i]<-rowMeans(dplyr::select(enrich,contains(i)))
-  enrich_median[,i]<-rowMedians(as.matrix(dplyr::select(enrich,contains(i))))
+  # TPW: pattern matching updated to be more explicit (exact cell-line column selection)
+  cell_labs <- lab[order$Cellline == i]
+  enrich_average[,i]<-rowMeans(dplyr::select(enrich, all_of(cell_labs)))
+  enrich_median[,i]<-rowMedians(as.matrix(dplyr::select(enrich, all_of(cell_labs))))
 }
 
 write.table(enrich_average, paste(opt$output_prefix,"_regions_EF_avg.tsv", sep=""),sep="\t", row.names=F, col.names=T, quote=F)

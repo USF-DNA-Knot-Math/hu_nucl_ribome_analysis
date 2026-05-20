@@ -119,6 +119,16 @@ Rscript $scripts/Subtype_ration_plots.R -o $order -f $outfolder/$(basename $rang
 * -m minimum range for rNMP EF color scheme in the heatmap [default 0]
 
 
+---
+
+## TPW Updates
+
+### `Subtype_ratio.R`
+
+Pattern matching for cell-line averaging updated to use explicit column selection (`dplyr::all_of()` on exact cell-line matches) rather than substring-based `dplyr::contains()`.
+
+---
+
 <!-- CONTRIBUTING -->
 ## Contributing
 
