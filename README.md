@@ -32,9 +32,9 @@ git clone https://github.com/DKundnani/hu_nucl_ribome_analysis
 ```
 
 ### Required format of files
-* Input files (bed) containing single nucleotide locations, mainly for rNMP data. [link for GEOdataset] (another single nucleotide data can also be experimented on!)
-* Reference genome files (.fa and .fai) of the organism being used(Also used to generate bed files) [Link for genome browser]
-* Range files in preferably bed format. [Link for other location that has these files]
+* Input files (bed) containing single nucleotide locations, mainly for rNMP data. [GSE297046, GSE333819] (another single nucleotide data can also be experimented on!)
+* Reference genome files (.fa and .fai) of the organism being used(Also used to generate bed files) [hg38]
+* Range files in preferably bed format. 
 
 <!-- USAGE -->
 ## Breakdown of each folder as independent analysis
