@@ -2,9 +2,9 @@
 
 #Taking in arguments
 library("optparse")
- 
+
 option_list = list(
-  make_option(c("-m", "--mat"), type="character", default=NULL, 
+  make_option(c("-m", "--mat"), type="character", default=NULL,
               help="matrix or data with headers [default %default]", metavar="filetype"),
   make_option(c("-n", "--name"), type="character", default=NULL,
               help="name of analysis [default %default]", metavar="filetype"),
@@ -20,11 +20,11 @@ option_list = list(
               help="take absolute (mulitple by -1 for the Xaxis values) [default %default]", metavar="filetype"),
   make_option(c("-p", "--perc"), action = "store_true", default = FALSE,
               help="group based on percentiles with equal number of datapoints in each group [default %default]", metavar="filetype"),
-  make_option(c("-y", "--y_max"), type="integer", default=4, 
+  make_option(c("-y", "--y_max"), type="integer", default=4,
               help="max y limit of plot [default %default]", metavar="integer"),
-  make_option(c("-o", "--output_prefix"), type="character", default="out", 
+  make_option(c("-o", "--output_prefix"), type="character", default="out",
               help="output file name [default %default]", metavar="character")
-); 
+);
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -80,7 +80,7 @@ getstats <- function(df,name,featurex='featurex', featurey='featurey', bins=10, 
   range[,3]=paste(range[,1],range[,2], sep="-")
   label=as.list(range[,3])
   #Getting Stats
-  
+
   stats<-ddply(data, c("groups"), summarise,
                N    = length(y),
                Featurex = mean(x),
@@ -92,7 +92,7 @@ getstats <- function(df,name,featurex='featurex', featurey='featurey', bins=10, 
                max   = max(y),
                CI25 =quantile(y, probs = 0.25),
                CI75 =quantile(y, probs = 0.75))
-  
+
   stats$low<-stats$ymean-stats$se
   #stats$low<-stats$CI25
   stats$high<-stats$ymean+stats$se
@@ -104,7 +104,7 @@ getstats <- function(df,name,featurex='featurex', featurey='featurey', bins=10, 
   #coeff<-lm(ymedian ~ Featurex , data = stats)
   #print(summary(coeff))
   #print(summary(coeff)$adj.r.squared)
-  
+
   #stats$ymedian <- as.numeric(stats$ymedian) + runif(length(stats$ymedian), -0.0001, 0.0001)
   coeff<-lm(ymean ~ Featurex , data = stats)
   p<-cor.test(as.numeric(stats$ymean) , as.numeric(stats$Featurex) , method='pearson', exact = TRUE, use = "complete.obs")
@@ -119,27 +119,18 @@ getstats <- function(df,name,featurex='featurex', featurey='featurey', bins=10, 
 mat=read.table(m, sep="\t", header=TRUE)
 mat=na.omit(mat); if (max(mat[exp])>50) {mat[exp]=log2(mat[exp]+1);  mat=mat[mat[exp]>1,]}
 if (rNMP == 28) {mat[28]=(mat[28]+mat[29])/2} #Taking avergae of KOS
-if (length(unique(mat[,5])) < length(mat[,5])) {exp_mat=aggregate(mat[exp], mat[5], FUN=mean);rNMP_mat=aggregate(mat[rNMP], mat[5], FUN=mean); new_mat = merge(exp_mat,rNMP_mat)}
 
 if (opt$switch) {mat[exp] = (mat[exp]*-1)}
 if (opt$abs) {mat[exp] = abs(mat[exp])}
 if (opt$perc) {
-  if (length(unique(mat[,5])) < length(mat[,5])) {
-    stats=getstats(new_mat, name, colnames(mat)[exp],colnames(mat)[rNMP],bins=10,percentile=TRUE)
-  } else {
-    stats=getstats(mat, name, colnames(mat)[exp],colnames(mat)[rNMP],bins=10,percentile=TRUE)
-  }
+  stats=getstats(mat, name, colnames(mat)[exp],colnames(mat)[rNMP],bins=10,percentile=TRUE)
 } else {
-  if (length(unique(mat[,5])) < length(mat[,5])) {
-    stats=getstats(new_mat, name, colnames(mat)[exp],colnames(mat)[rNMP],bins=10,percentile=FALSE)
-  } else {
-    stats=getstats(mat, name, colnames(mat)[exp],colnames(mat)[rNMP],bins=10,percentile=FALSE)
-  }
+  stats=getstats(mat, name, colnames(mat)[exp],colnames(mat)[rNMP],bins=10,percentile=FALSE)
 }
 #stats[3][[1]] = stats[3][[1]][-1,]; rownames(stats[3][[1]])<- stats[3][[1]]$label
 
-plot_stats=stats[3][[1]]; write.table(plot_stats,paste(out,'/',name,"_stats.tsv",sep=""), append = FALSE, quote = FALSE, sep = "\t", row.names = TRUE,col.names = TRUE)
-data=stats[1][[1]]; write.table(data,paste(out,'/',name,"_data.tsv",sep=""), append = FALSE, quote = FALSE, sep = "\t", row.names = TRUE,col.names = TRUE)
+plot_stats=stats[3][[1]]; write.table(plot_stats,paste(out,'/',name,"_stats.tsv",sep=""), append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE,col.names = TRUE)
+data=stats[1][[1]]; write.table(data,paste(out,'/',name,"_data.tsv",sep=""), append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE,col.names = TRUE)
 
 svg(paste(out,'/',name,"bins.svg",sep=""), width = 2, height = 2.1)
 #png(paste(out,'/',name,"bins.png",sep=""), width = 2, height = 2.1, units = "in", res=600, type="cairo", bg="transparent")
@@ -172,7 +163,7 @@ p<-ggplot(data, aes(x=groups,y=y, fill=groups))+
         axis.line = element_line(linewidth=0.3,color = "black"),
         axis.text = element_text(color="black"),
         panel.background = element_rect(fill = "transparent",colour = NA),
-        panel.grid.minor = element_blank(), 
+        panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
         plot.background = element_rect(fill = "transparent",colour = NA),
         strip.background = element_blank(),
@@ -195,6 +186,5 @@ writeLines("............... Stats .............")
 writeLines(paste("lmcoeff","Pearson'sR", "Pearson'sPvalue", "Spearman'srho", "SpearmansPvalue", sep="\t"))
 print(unlist(stats[5:9]))
 corr=data.frame(stats=c("lmcoeff","Pearson'sR", "Pearson'sPvalue", "Spearman'srho", "SpearmansPvalue", "intercept", "slope", "scatter_intercept","scatter_slope"), value=c(unlist(stats[5:9]),stats[[4]]$coefficients[1:2],scatter_stats$coefficients[1:2]))
-write.table(corr,paste(out,'/',name,"_corr.tsv",sep=""), append = FALSE, quote = FALSE, sep = "\t", row.names = TRUE,col.names = TRUE)
+write.table(corr,paste(out,'/',name,"_corr.tsv",sep=""), append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE,col.names = TRUE)
 writeLines("...................................")
-
