@@ -247,3 +247,92 @@ bash make_fig4BC.sh
 ```
 
 Both scripts use placeholder input paths (`/path/to/...`) at the top — update these to point at your `rNMP_EF` outputs and RNA-seq TPM files before running. Outputs are written to `output_fig3C/` and `output_fig4BC/` respectively.
+
+---
+
+## Final figure scripts: Fig 3E, Fig 4D-E, Fig 4F
+
+These three standalone scripts generate the final versions of Fig 3E, Fig 4D-E, and Fig 4F directly from EF and TPM tables (independent of the `pair_bins.R`/`merge_exp_all.py` pipeline above). Each is self-contained: edit the input paths/constants near the top of the script, then run with `Rscript`.
+
+### `make_fig3E.R`
+
+**Used for:** Fig 3E — strand-bias (opposite-strand minus same-strand rN EF) boxplots, stratified by expression level (Low/Mod/High), for 7 cell types across two genomic regions (Promoter: TSS 0-1kb downstream; GeneBody: TSS-to-TTS).
+
+Inputs:
+
+| Path | Description |
+|---|---|
+| `Tyler_rNMPs/hg38_refGene_TSS_downstream_0_1kb_1000bp/rN/out/*_rN_{opp,same}_EF_regions_EF.tsv` | Promoter region rN EF tables |
+| `Tyler_rNMPs/hg38_refGene_collapsed/rN/out/*_rN_{opp,same}_EF_regions_EF.tsv` | Gene body region rN EF tables |
+| `Expression-level-lists/bowtie/{CD4T,H9,WT,KO-T3-8,KO-T3-17,T3-8siRNA-NC_5_5pmol,T3-8siRNA-TOP1_5_5pmol}{Low,Mod,High}_pc.bed` | Per-cell-type, per-expression-level gene ID lists (col 4 = gene ID) |
+
+For each library, the script computes `bias = opp - same` EF, groups by cell type/expression level/region, and runs Wilcoxon tests (Low vs Mod, Low vs High) to annotate significance brackets.
+
+```bash
+Rscript make_fig3E.R
+```
+
+Outputs (under `Fig3E/050526/`):
+
+| Output | Description |
+|---|---|
+| `Fig3E_0-1kb-downstream-of-TSS.svg` / `_nolabs.svg` | Promoter region boxplots |
+| `Fig3E_TSS-to-TTS.svg` / `_nolabs.svg` | Gene body region boxplots |
+| `Fig3E_pvalues_summary.csv` | Wilcoxon p-values for all cell type / region / expression-group comparisons |
+| `Fig3E_legend_vertical.svg` / `_notext.svg` | Standalone vertical legend |
+
+### `make_fig4D-E.R`
+
+**Used for:** Fig 4D-E — rG EF difference (asinh-scaled) vs. RNA log2TPM expression difference, quadrant analysis, for four comparisons (WTvKO with low/high rNMP bias, NCvTOP1, TOP1vWT). Genes are binned into Low/Medium/High expression by WT RNA quartiles before any bias threshold is applied.
+
+Inputs:
+
+| Path | Description |
+|---|---|
+| `Expression_TPMs/Bowtie/Ribome-data.tpms_by_condition.tsv` | RNA-seq TPMs (WT, KO-T3-8, KO-T3-17, siRNA-NC, siRNA-TOP1 columns) |
+| `Tyler_rNMPs/hg38_refGene_TSS_downstream_0_1kb_1000bp/rG/out/*_rG_both_EF_regions_EF_avg.tsv` | rG EF (both strands) |
+| `Tyler_rNMPs/hg38_refGene_TSS_downstream_0_1kb_1000bp/rN/out/*_rN_{same,opp}_EF_regions_EF_avg.tsv` | rN EF (same/opp strand), used to compute rNMP strand bias for KO and TOP1 |
+| `Static_annotations/ribome_ensembl_to_symbol_map_pc.tsv` | Static Ensembl-to-symbol map (cols `ENSEMBL`, `SYMBOL`), restricted to protein-coding genes |
+
+TOP1vWT RNA values are batch-corrected with `limma::removeBatchEffect` (WT/KO vs. NC/TOP1 as batches) before computing differences.
+
+```bash
+Rscript make_fig4D-E.R
+```
+
+Outputs (under `Fig4D/05-14-26_final/static_gene_mapping_pc/dynamic_pre_filter_with_batchnorm_keep/`):
+
+| Output | Description |
+|---|---|
+| `plots/*_{Low,Medium,High}.svg` / `_nolabs.svg` | Scatter plots per comparison/expression bin |
+| `annotated/*_annotated.svg` | Scatter plots annotated with quadrant counts and Q2/Q3, Q1/Q4 ratios |
+| `dot_plots/high_expression_*_dot_plot*.svg` | High-expression quadrant-ratio summary dot plots and legend |
+| `*_quadrant_tally.csv`, `*_stage_summary.csv`, `*_removed_rG_both0_genes.csv` | Per-comparison QC tables |
+| `all_comparisons_*.csv`, `all_modes_ratio_summary.csv`, `mapping_mode_gene_counts.csv` | Combined summary tables across all bias-threshold cutoffs |
+
+### `make_fig4F.R`
+
+**Used for:** Fig 4F — Expression Ratio (Q3/Q1 of log2TPM, expressed genes only) per genotype, comparing splice-aware (joined WT-KO + siTOP TPM tables) and splice-unaware (single Ribome-data TPM table) datasets, with `limma::removeBatchEffect` batch correction.
+
+Inputs:
+
+| Path | Description |
+|---|---|
+| `WT-KO.tpms_by_condition.tsv`, `siTOP.tpms_by_condition.tsv` | Splice-aware dataset (inner-joined on `Geneid`) |
+| `Ribome-data.tpms_by_condition.tsv` | Splice-unaware dataset |
+
+Each TPM table is expected to have `Chr`, `Start`, `End`, `Strand`, `Length`, `Geneid` columns plus one column per sample; `Chr` in `{M, X, Y}` is excluded.
+
+```bash
+Rscript make_fig4F.R
+```
+
+Outputs (under `Fig4F/<MM-DD-YY>/`, dated by run date):
+
+| Output | Description |
+|---|---|
+| `fig4F_ribome_splice_aware.svg` / `_noy.svg` | Splice-aware Expression Ratio dot plot |
+| `fig4F_ribome_splice_unaware.svg` / `_noy.svg` | Splice-unaware Expression Ratio dot plot |
+| `fig4F_legend_full.svg`, `fig4F_legend_dots_only.svg` | Shared legends |
+
+The script also runs a series of diagnostic comparisons (density plots, PCA before/after batch correction, median-centering vs. limma correction) and prints summary tables to the console; these are exploratory and not required to reproduce the final figure.
